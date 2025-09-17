@@ -1,8 +1,8 @@
 requests
 python-dotenv
-openpyxl
+pandas
+pydantic
 pytest
 pytest-mock
 black
 flake8
-pandas

@@ -1,42 +1,27 @@
-from openpyxl import Workbook
-from openpyxl.styles import Alignment
-from openpyxl.chart import BarChart, Reference
+import pandas as pd
 from typing import List
 from app.core.entities.repository import Repository
 from app.core.interfaces.report_generator import ReportGenerator
 
 class ExcelReportGenerator(ReportGenerator):
-    def generate(self, repos: List[Repository], file_path: str) -> None:
-        wb = Workbook()
-        ws = wb.active
-        ws.title = f"Top {len(repos)} Repos"
+    def generate(self, repositories: List[Repository], output_path: str):
+        repo_data = []
+        for repo in repositories:
+            data = repo.model_dump()
+            data['age_in_years'] = repo.age_in_years
+            repo_data.append(data)
+        
+        if not repo_data:
+            return
 
-        headers = ["Nome", "Estrelas", "URL", "Criado em", "Atualizado em",
-                   "Releases", "Linguagem", "PRs Mergeados", "Issues Fechadas %",
-                   "CBO Médio", "DIT Médio", "LCOM Médio"]
-        ws.append(headers)
-
-        for cell in ws[1]:
-            cell.alignment = Alignment(wrap_text=True, horizontal="center", vertical="center")
-
-        for r in repos:
-            ws.append([
-                r.name, r.stargazer_count, r.url, r.created_at, r.updated_at,
-                r.releases_count, r.primary_language or "", r.merged_pull_requests,
-                round(r.closed_issues_percentage, 2),
-                r.cbo, r.dit, r.lcom
-            ])
-
-        for row in ws.iter_rows(min_row=2, max_row=ws.max_row, max_col=ws.max_column):
-            for cell in row:
-                cell.alignment = Alignment(wrap_text=True, vertical="top")
-
-        values = Reference(ws, min_col=2, min_row=2, max_row=ws.max_row)
-        cats = Reference(ws, min_col=1, min_row=2, max_row=ws.max_row)
-        chart = BarChart()
-        chart.title = "Estrelas por Repositório"
-        chart.add_data(values)
-        chart.set_categories(cats)
-        ws.add_chart(chart, "K2")
-
-        wb.save(file_path)
+        df = pd.DataFrame(repo_data)
+        column_order = [
+            'name', 'url', 'age_in_years', 'releases', 'stars',
+            'total_loc', 'total_comments', 'java_files',
+            'avg_loc_per_file', 'avg_comments_per_file',
+            'cbo_avg', 'dit_avg', 'lcom_avg',
+            'cbo_total', 'dit_total', 'lcom_total'
+        ]
+        df_ordered = df[[col for col in column_order if col in df.columns]]
+        df_ordered = df_ordered.sort_values("total_loc", ascending=False)
+        df_ordered.to_excel(output_path, index=False)

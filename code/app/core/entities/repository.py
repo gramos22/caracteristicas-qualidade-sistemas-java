@@ -1,24 +1,27 @@
-from dataclasses import dataclass
+from pydantic import BaseModel, Field
 from typing import Optional
+from datetime import datetime, timezone
 
-@dataclass
-class Repository:
+class Repository(BaseModel):
     name: str
-    stargazer_count: int
     url: str
-    created_at: str
-    updated_at: str
-    releases_count: int
-    primary_language: Optional[str]
-    merged_pull_requests: int
-    total_issues: int
-    closed_issues: int
-    cbo: Optional[float] = None
-    dit: Optional[float] = None
-    lcom: Optional[float] = None
+    stars: int = Field(..., alias='stargazerCount')
+    created_at: datetime = Field(..., alias='createdAt')
+    releases: int
+    total_loc: Optional[int] = 0
+    total_comments: Optional[int] = 0
+    java_files: Optional[int] = 0
+    avg_loc_per_file: Optional[float] = 0.0
+    avg_comments_per_file: Optional[float] = 0.0
+    cbo_avg: Optional[float] = 0.0
+    dit_avg: Optional[float] = 0.0
+    lcom_avg: Optional[float] = 0.0
+    cbo_total: Optional[int] = 0
+    dit_total: Optional[int] = 0
+    lcom_total: Optional[float] = 0.0
 
     @property
-    def closed_issues_percentage(self) -> float:
-        if self.total_issues == 0:
-            return 0.0
-        return (self.closed_issues / self.total_issues) * 100
+    def age_in_years(self) -> int:
+        if self.created_at.tzinfo is None:
+            return (datetime.now() - self.created_at).days // 365
+        return (datetime.now(timezone.utc) - self.created_at).days // 365

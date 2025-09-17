@@ -1,9 +1,23 @@
+# Ambiente
 .venv/
+.env
+
+# Python
 __pycache__/
 *.pyc
-.env
-data/
-*.xlsx
+*.pyo
+*.pyd
+
+# IDE
 .vscode/
 .idea/
+
+# Build & Artefatos de Análise
+temp_repos/
+ck_output/
+*.csv
+*.xlsx
+data/
+
+# Dependencias
 ck-0.7.1-SNAPSHOT-jar-with-dependencies.jar
