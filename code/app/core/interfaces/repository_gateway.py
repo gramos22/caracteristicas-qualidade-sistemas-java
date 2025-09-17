@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 from app.core.entities.repository import Repository
 
-class ReportGenerator(ABC):
+class RepositoryGateway(ABC):
     @abstractmethod
-    def generate(self, repositories: List[Repository], output_path: str):
+    def get_popular_java_repos(self, count: int) -> List[Repository]:
         pass
